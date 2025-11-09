@@ -45,8 +45,8 @@
       padding: 15px;
       border-radius: 4px;
       margin-top: 20px;
+      min-height: 50px;
       white-space: pre-wrap;
-      word-wrap: break-word;
     }
     .note {
       color: #666;
@@ -84,19 +84,17 @@
       function cleanNode(node) {
         if (node.nodeType === 1) { // Elemento
           if (!allowedTags.includes(node.tagName.toLowerCase())) {
-            // Remove a tag, mas mantém os filhos
             while (node.firstChild) {
               node.parentNode.insertBefore(node.firstChild, node);
             }
             node.parentNode.removeChild(node);
           } else {
-            // Mantém a tag, limpa atributos indesejados
+            // Mantém a tag, mas remove atributos indesejados
             Array.from(node.attributes).forEach(attr => {
               if (attr.name !== 'href' && attr.name !== 'title' && attr.name !== 'target') {
                 node.removeAttribute(attr.name);
               }
             });
-            // Processa os filhos
             Array.from(node.childNodes).forEach(cleanNode);
           }
         } else if (node.nodeType === 3) { // Texto
@@ -104,16 +102,15 @@
         }
       }
 
-      // Processa o conteúdo
-      cleanNode(tempDiv);
+      // Processa todos os nós filhos
+      Array.from(tempDiv.childNodes).forEach(cleanNode);
 
       // Remove tags vazias (ex: <strong></strong>)
-      const cleanHTML = tempDiv.innerHTML
-        .replace(/<(\w+)(\s[^>]*)?><\/\1>/g, '') // tags vazias
-        .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br><br>') // normaliza quebras
-        .trim();
+      let cleanedHTML = tempDiv.innerHTML;
+      cleanedHTML = cleanedHTML.replace(/<(\w+)[^>]*><\/\1>/g, '');
+      cleanedHTML = cleanedHTML.replace(/\s*<br\s*\/?>\s*/g, '<br>');
 
-      output.innerHTML = cleanHTML;
+      output.innerHTML = cleanedHTML;
       output.style.display = 'block';
     });
   </script>
