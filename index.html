@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Limpar Texto para Blogue</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      margin: 15px 0;
+      padding: 10px;
+      font-family: inherit;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      display: block;
+      margin: 15px auto;
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .result {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 20px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .note {
+      color: #666;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Limpar Texto para Blogue</h1>
+  <p>Cola aqui o texto copiado de Word, PDF ou sites — mantemos negrito, itálico, links, títulos, listas e parágrafos.</p>
+
+  <textarea id="inputText" placeholder="Cole o seu texto impuro aqui..."></textarea>
+
+  <button id="cleanButton">Limpar Texto</button>
+
+  <div class="result" id="outputText" style="display: none;"></div>
+
+  <p class="note">Depois de limpar, copie o texto da caixa abaixo e cole diretamente no editor do seu blogue (Blogger, WordPress, etc.).</p>
+
+  <script>
+    document.getElementById('cleanButton').addEventListener('click', function() {
+      const input = document.getElementById('inputText').value;
+      const output = document.getElementById('outputText');
+      
+      // Cria um elemento temporário para processar o HTML
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = input;
+
+      // Lista de tags permitidas
+      const allowedTags = ['strong', 'b', 'em', 'i', 'u', 'a', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'br', 'blockquote', 'code', 'pre'];
+
+      // Função para limpar recursivamente
+      function cleanNode(node) {
+        if (node.nodeType === 1) { // Elemento
+          if (!allowedTags.includes(node.tagName.toLowerCase())) {
+            // Remove a tag, mas mantém os filhos
+            while (node.firstChild) {
+              node.parentNode.insertBefore(node.firstChild, node);
+            }
+            node.parentNode.removeChild(node);
+          } else {
+            // Mantém a tag, limpa atributos indesejados
+            Array.from(node.attributes).forEach(attr => {
+              if (attr.name !== 'href' && attr.name !== 'title' && attr.name !== 'target') {
+                node.removeAttribute(attr.name);
+              }
+            });
+            // Processa os filhos
+            Array.from(node.childNodes).forEach(cleanNode);
+          }
+        } else if (node.nodeType === 3) { // Texto
+          // Mantém o texto
+        }
+      }
+
+      // Processa o conteúdo
+      cleanNode(tempDiv);
+
+      // Remove tags vazias (ex: <strong></strong>)
+      const cleanHTML = tempDiv.innerHTML
+        .replace(/<(\w+)(\s[^>]*)?><\/\1>/g, '') // tags vazias
+        .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br><br>') // normaliza quebras
+        .trim();
+
+      output.innerHTML = cleanHTML;
+      output.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
